@@ -1,0 +1,259 @@
+<html>
+	<head>
+		<title>Reference - </title>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body>
+		<div id="navigation">
+	<div id="content">
+		
+			
+				<a href="./0-Introduction.html">Introduction</a>
+			
+		
+			
+				<a href="./1-Flow.html">Flow</a>
+			
+		
+			
+				<a href="./2-Nodes.html">Nodes</a>
+			
+		
+			
+				<a href="./3-Patterns.html">Patterns</a>
+			
+		
+			
+				<a href="./4-Reference.html">Reference</a>
+			
+		
+			
+		
+			
+		
+		<div id="version">2.3.1 Temasek Polytechnic</div>
+	</div>
+</div>
+
+
+		<div id="header">
+			<h1>Reference</h1>
+		</div>
+		<div id="content">
+			<h1>Completeness</h1>
+<p>Though some of the runtime <span class="caps">API</span> has already been covered in the Flow chapter, the aim here is to just list everything and go through it from start to end.</p>
+<h2>Basics</h2>
+<p>There are three major types you will be working with when coding agains the Behave runtime:</p>
+<ul>
+	<li>Your generated library class.</li>
+	<li><code>Tree</code> instances.</li>
+	<li>The <code>IAgent</code> interface or generated agent blueprints implementing it.</li>
+</ul>
+<p>Additional types include the all-important <code>BehaveResult</code> enum and the tick/reset forward delegates:
+<script src='https://gist.github.com/5555031.js?file=Runtime.cs'></script><div><noscript><pre><code>namespace Behave.Runtime
+{
+	public enum BehaveResult
+	{
+		Failure,
+		Success,
+		Running
+	}</p>
+<p>public delegate BehaveResult TickForward (
+		Tree sender,
+		string stringParameter,
+		float floatParameter,
+		IAgent agent,
+		object data
+	);</p>
+<p>public delegate void ResetForward (
+		Tree sender,
+		string stringParameter,
+		float floatParameter,
+		IAgent agent, object data
+	);</p>
+<p>public delegate BehaveResult TickForwardShort (Tree sender);</p>
+<p>public delegate void ResetForwardShort (Tree sender);
+}
+</code></pre></noscript></div></p>
+<h2>Library</h2>
+<p>Let&#8217;s just cover the library class really quickly as it is quite simple and straight forward:
+<script src='https://gist.github.com/5555031.js?file=BLMyLibrary.cs'></script><div><noscript><pre><code>public class BLMyLibrary
+{
+	public enum TreeType { Path_To_TreeName, ..., Unknown };
+	public enum ContextType { ContextName, ..., Unknown };
+	public enum PriorityType { PriorityName, ..., Unknown };
+	public enum ActionType { ActionName, ..., Unknown };</p>
+<p>public static Tree InstantiateTree (TreeType treeType, IAgent agent);
+	public static TreeType Type (Tree tree);
+}
+</code></pre></noscript></div></p>
+<p>The above class is generated based on a library asset named MyLibrary. It, like its editor-time counterpart, contains all the data of your library. All strings have been translated to four enums:</p>
+<ul>
+	<li><code>TreeType</code>.</li>
+	<li><code>ContextType</code>.</li>
+	<li><code>PriorityType</code>.</li>
+	<li><code>ActionType</code>.</li>
+</ul>
+<p>Whenever the Behave <span class="caps">API</span> gives you or expects an integer value, you will usually need to cast it to or from one of these &#8211; depending on the context. The two exceptions are the <code>InstantiateTree</code> method of the library class, which takes a <code>TreeType</code> value directly and its counterpart, <code>Type</code> which returns a <code>TreeType</code> value when passed a <code>Tree</code> reference.</p>
+<h3>Instantiation</h3>
+<p>To get things moving in the Behave runtime, you first need to instantiate a tree. For this you have the <code>InstantiateTree</code> method which, when supplied with a <code>TreeType</code> and an <code>IAgent</code> will:</p>
+<ol>
+	<li>Create an instance of the generated <code>Tree</code> class matching the given <code>TreeType</code>.</li>
+	<li>Assign the <code>IAgent</code> reference as the default handler agent for the <code>Tree</code> instance.</li>
+	<li>Run <code>Tree.ReflectForwards</code> on the <code>Tree</code> instance, providing the <code>IAgent</code> as parameter.</li>
+	<li>Return the <code>Tree</code> instance.</li>
+</ol>
+<p>If the <code>IAgent</code> reference passed is derived from a generated agent blueprint, step 3 is skipped, since all action handlers are already known through the abstract interface of the blueprint.</p>
+<h2>IAgent</h2>
+<p>Jumping a little in the initial list of three, let&#8217;s cover the agents next since they are comparatively simpler than the <code>Tree</code>.
+<script src='https://gist.github.com/5555031.js?file=IAgent.cs'></script><div><noscript><pre><code>namespace Behave.Runtime
+{
+	public interface IAgent
+	{
+		BehaveResult Tick (Tree sender);
+		void Reset (Tree sender);
+		int SelectTopPriority (Tree sender, params int[] IDs);
+	}
+}</code></pre></noscript></div></p>
+<p>Implementing the IAgent interface requires that you implement the three methods it holds:</p>
+<ul>
+	<li><code>Tick</code>.</li>
+	<li><code>Reset</code>.</li>
+	<li><code>SelectTopPriority</code>.</li>
+</ul>
+<p>If you define an agent blueprint in your library and inherit from the resulting generated class, you will not have to implement any of the <code>IAgent</code> methods.</p>
+<p>The default handlers of <code>IAgent</code>, as well as direct handlers for all the actions used by the trees supported by the agent blueprint, are automatically generated as <code>virtual</code> methods in the blueprint class:
+<script src='https://gist.github.com/5555031.js?file=BAMyLibrary_MyAgent.cs'></script><div><noscript><pre><code>public class BAMyLibrary_MyAgent : Behave.Runtime.IAgent
+{
+	public virtual BehaveResult Tick (Tree sender);
+	public virtual void Reset (Tree sender);
+	public virtual int SelectTopPriority (Tree sender, params int[] IDs);
+	public virtual BehaveResult Tick[Name]Action (
+		Tree sender,
+		string stringParameter,
+		float floatParameter,
+		IAgent agent,
+		object data
+	);
+	public virtual void Reset[Name]Action (
+		Tree sender,
+		string stringParameter,
+		float floatParameter,
+		IAgent agent,
+		object data
+	);
+}</code></pre></noscript></div></p>
+<p>Notice that library classes are prefixed BL, while agent blueprints are prefixed BA.</p>
+<h3>Handlers</h3>
+<p><code>IAgent</code> defines the default handlers for an agent. Since each action can have both its own tick and reset handlers, the default <code>Tick</code> and <code>Reset</code> handlers are only invoked if no custom handlers exist for an action.</p>
+<p>This is where the <code>IAgent</code> instance passed on <code>Tree</code> instantiation comes in. If no forward has been set either manually or through introspection from <code>Tree.ReflectForwards</code>, the default handler for the corresponding event is invoked on that <code>IAgent</code> instance.</p>
+<p>As the init phase does not have a default handler, the absence of a specific forward for init on an action will result in an assumption of successful init.</p>
+<p>For agent blueprints, the default implementation of all custom handlers is to invoke the corresponding default handler. For init handlers, <code>BehaveResult.Success</code> is just immediately returned.</p>
+<p>Since priority selectors do not have names, evaluations of these always result in invocation of the default <code>SelectTopPriority</code> handler.</p>
+<h3>Parameters</h3>
+<p>Prior to version 2.2, the following was true for parameters (up to date description follows):
+<div class="note">
+Depending on which implementation of a handler you are using, you may receive one or more of the following parameters:</p>
+<ul>
+	<li><code>Tree</code> sender.</li>
+	<li><code>string</code> stringParameter.</li>
+	<li><code>float</code> floatParameter.</li>
+	<li><code>IAgent</code> agent.</li>
+	<li><code>object</code> data.</li>
+	<li><code>int[]</code> IDs.</li>
+</ul>
+<p>Of these, sender, agent and data are probably the most straight forward. The sender parameter is simply a reference to the <code>Tree</code> instance from which the current tick originated.</p>
+<p>The agent parameter is a reference to the default agent of that tree &#8211; unless a different <code>IAgent</code> reference was passed to the <code>Tick</code> call.</p>
+<p>Similarly, the data parameter is directly what was passed as the second parameter of the <code>Tick</code> call. If nothing was passed, this will always default to null. The data parameter can be useful for evaluating a tree <em>in the context of</em> something.</p>
+<p>The stringParameter and floatParameter parameters are very straight forward. These are simply the parameters set in the tree canvas on the actual node resulting in this invocation. Default values are &quot;&quot; and 0.0f respectively.</p>
+<p>Finally the IDs parameter as sent to the <code>SelectTopPriority</code> handler is an array of integer values corresponding to <code>BLYourLibrary.PriorityType</code> values. The only valid return values of <code>SelectTopPriority</code> are the values contained in the IDs array. <code>SelectTopPriority</code> will never get invoked with an empty IDs array.</div></p>
+<p>Each handler receives a &#8220;sender&#8221; parameter of type <code>Tree</code>. This is simply a reference to the <code>Tree</code> instance from which the current tick originated. From this sender parameter, the active agent reference can be obtained &#8211; as well as action parameters and much more.</p>
+<p>The <code>SelectTopPriority</code> handler gets passed an additional parameter, &#8220;IDs&#8221; of type <code>int[]</code>. It is an array of integer values corresponding to <code>BLYourLibrary.PriorityType</code> values. The only valid return values of <code>SelectTopPriority</code> are the values contained in the IDs array. <code>SelectTopPriority</code> will never get invoked with an empty IDs array.</p>
+<h2>Tree</h2>
+<p>The more complex of the tree core classes is the <code>Tree</code> class. Every tree defined in your library, through the Behave editor UI, results in a generated class inheriting from <code>Tree</code>.</p>
+<p>These generated classes are private classes contained in the generated library class and can (or should) only be instantiated through the <code>InstantiateTree</code> method of that class.</p>
+<p>Execution of the tree is primarily controlled via the <code>Tick</code> and <code>Reset</code> methods of the class. <code>Tick</code> will tick the node connected to the tree root, which in turn will tick its children if any and the result value of the root node is finally passed back as the return value of the <code>Tick</code> call.</p>
+<p>During tree evaluation, <code>Tick</code> will commonly return a value of <code>BehaveResult.Running</code> until the tree evaluation ends up completing or failing the requirements of the root node. At this point it is common to call the <code>Reset</code> method on the tree instance and then return to ticking it again from a fresh state.</p>
+<p><code>TickWrapping</code> will automatically respond to a non-Running result by resetting the tree for another pass. Thus if you have no other needs to respond to the result, you might as well use this method.</p>
+<p>An alternative to the regular <code>Tick</code> function, <code>TickContinuously</code> will keep ticking the tree as long as it returns <code>Running</code> or until the given iteration cap it reached. In either case, the last return value of the tree is then returned by <code>TickContinuously</code>.</p>
+<p>As mentioned in the Parameters description of IAgent Handlers, the <code>Tick</code> and <code>Reset</code> methods optionally take an alternative default <code>IAgent</code> reference and an <code>object</code> reference for context.</p>
+<p>There is much more than just <code>Tick</code> and <code>Reset</code> to <code>Tree</code> classes though:
+<script src='https://gist.github.com/5555031.js?file=Tree.cs'></script><div><noscript><pre><code>namespace Behave.Runtime
+{
+	public class Tree
+	{
+		public BehaveResult Tick ([IAgent agent, object data]);
+		public void Reset ([IAgent agent, object data]);</p>
+<p>public bool TickActive {get;}
+		public int ActiveID {get;}
+		public int ActiveContext {get;}
+		public int LastTicked {get;}
+		public float Frequency {get;}
+		public int DataSize {get;}</p>
+<p>public bool DebugAvailable {get;}
+		public string Name {get;}
+		public int ActiveComponent {get;}
+		public bool Plugged {get; set;}</p>
+<p>public void SetInitForward (int id, [TickForward/TickForwardShort] init);
+		public void SetTickForward (int id, [TickForward/TickForwardShort] tick);
+		public void SetResetForward (int id, [ResetForward/ResetForwardShort] reset);
+		public void ReflectForwards (object target);
+		public void ResetForwards ();
+	}
+}
+</code></pre></noscript></div></p>
+<h3>Forwards</h3>
+<p>As mentioned earlier, actions can have custom handlers in stead of the default ones defined by the IAgent interface. These can be set directly by calling <code>Set[Init/Tick/Reset]Forward</code> on a tree instance, passing a <code>BLYourLibrary.ActionType</code> value cast to int as well as a method matching one of the core handler delegates.</p>
+<p>A different way of registering forwards en-masse is by calling <code>ReflectForwards</code> on the tree instance, passing a reference to a class which will be searched for possible handler matches via introspection. These are the handlers picked up by <code>ReflectForwards</code>:
+<script src='https://gist.github.com/5555031.js?file=MyHandlers.cs'></script><div><noscript><pre><code>BehaveResult Tick[Name]Action (
+	Tree sender,
+	string stringParameter,
+	float floatParameter,
+	IAgent agent,
+	object data
+);
+void Reset[Name]Action (
+	Tree sender,
+	string stringParameter,
+	float floatParameter,
+	IAgent agent,
+	object data
+);</p>
+<p>BehaveResult Tick[Name]Action (Tree sender);
+void Reset[Name]Action (Tree sender);</p>
+<p>BehaveResult [Name]Action
+{
+	get; // Tick
+	set; // Reset
+}</code></pre></noscript></div></p>
+<p>Note that the object reference passed to <code>ReflectForwards</code> does not necessarily have to implement the <code>IAgent</code> interface. And that you can call all of the forward setters as well as <code>ReflectForwards</code> as many times as you like for a given tree reference &#8211; on as many target instances as you like. Additionally, it is completely valid to have one target method handle the forwards of multiple actions.</p>
+<p><code>ReflectForwards</code> is not a destructive operation &#8211; any forwards already in place, which do not match handlers on the passed reference, will remain unaffected.</p>
+<p><code>ResetForwards</code> will clear any set forwards on that tree &#8211; including those set up when passing an <code>IAgent</code> reference during tree instantiation. Afterwards, for reflected agents, the default <code>IAgent</code> defined handlers will be invoked for all actions. For agent blueprints, however, the original virtual handlers will be used.</p>
+<p>Specifying the optional <code>target</code> parameter on <code>ResetForwards</code> will reset only forwards to handlers on that object.</p>
+<h3>Accessors</h3>
+<p>For more specialised handlers, the <code>Tree</code> class has several accessors for data on the current state of the tree.</p>
+<p><code>ActiveID</code> and <code>ActiveContext</code> are most useful in a tick handler. The context of a tree can be used to expand the functionality of actions. Cast it to <code>BLYourLibrary.ContextType</code> for use. And if working in the default handler or in a handler set up for multiple actions, <code>ActiveID</code> cast to <code>BLYourLibrary.ActionType</code> tells you which specific action is currently being evaluated.</p>
+<p><code>ActiveStringParameter</code> and <code>ActiveFloatParameter</code> contain data configured per-component in the tree editor. This allows you to customise the handling of a particular instance of an action.</p>
+<p>If you are working in threads or have a function being used both inside and outside the tree tick, the <code>TickActive</code> accessor quickly tells you if a tick is currently being evaluated or if the tree is currently inactive.</p>
+<p><code>ActiveData</code> holds the same value as was optionally passed to the original <code>Tick</code> call. There are no requirements on this data, but it allows you to provide some context for the tick, relevant for your handlers.</p>
+<p><code>LastTicked</code> can be useful as debug information or for that very special hack, while <code>Frequency</code> and <code>DataSize</code> are static &#8211; <code>Frequency</code> being a direct output of the frequency variable specified by the tree designer via the Behave editor UI and <code>DataSize</code> being an estimate on memory consumption for this particular tree instance.</p>
+<p>Once you determine that you have <code>DebugAvailable</code> (which it will only be if the library has been built for debug), you may access the <code>Name</code> of the tree, the currently <code>ActiveComponent</code> as well as check if the tree is <code>Plugged</code> in or has been unplugged by the debugger. <code>Plugged</code> also has a setter which you effectively can use to throw your own Behave breakpoints.</p>
+<h2>Debugging</h2>
+<p>In order to transmit the local state to remote debuggers, you need to update the debugger at some rate.
+<script src='https://gist.github.com/5555031.js?file=Debugging.cs'></script><div><noscript><pre><code>namespace Behave.Debugger
+{
+	public class Debugging
+	{
+		public static void Update ();
+	}</p>
+<p>public class DebugUpdater
+	{
+		public static void Start (int frequency = 0);
+	}
+}</code></pre></noscript></div></p>
+<p>If you want to completely control when and how this happens, simply call <code>Debugger.Update</code> at your leasure. However, would you rather just start up the debugger and not have to worry about its runtime afterwards, <code>DebugUpdater.Start</code> lets you start a continuous update of the debugger &#8211; letting you specify a frequency and defaulting to 20 frames per second.</p>
+<p>Calling <code>Start</code> while the debug updater is already running will merely change the frequency at which it is updating. Enabling debugger auto-launch in the library build settings means a call to <code>Start</code> on tree instantiation &#8211; passing the frequency value specified in those same settings.</p>
+<p>Passing a value of zero or less to <code>DebugUpdater.Start</code> results in the debugger getting updated every frame. However this is not recommended.</p>
+		</div>
+	</body>
+</html>

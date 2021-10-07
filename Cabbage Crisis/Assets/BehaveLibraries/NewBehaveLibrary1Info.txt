@@ -1,0 +1,28 @@
+Library class:
+BLNewBehaveLibrary1
+
+Trees:
+	GroundBeetleTree
+	LadybirdTree
+	Unknown
+
+Contexts:
+	Unknown (1)
+
+Branch priority groups:
+	Unknown
+
+Actions:
+	CheckAnts (1)
+	FindAphids (2)
+	FindCaterpillars (3)
+	FindPrey (4)
+	KillPrey (5)
+	MoveToPrey (6)
+	Unknown (7)
+
+Decorators:
+	Unknown (8)
+
+Agent classes:
+	BANewBehaveLibrary1_NewAgentBlueprint1

@@ -1,0 +1,163 @@
+<html>
+	<head>
+		<title>Introduction - </title>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body>
+		<div id="navigation">
+	<div id="content">
+		
+			
+				<a href="./0-Introduction.html">Introduction</a>
+			
+		
+			
+				<a href="./1-Flow.html">Flow</a>
+			
+		
+			
+				<a href="./2-Nodes.html">Nodes</a>
+			
+		
+			
+				<a href="./3-Patterns.html">Patterns</a>
+			
+		
+			
+				<a href="./4-Reference.html">Reference</a>
+			
+		
+			
+		
+			
+		
+		<div id="version">2.3.1 Temasek Polytechnic</div>
+	</div>
+</div>
+
+
+		<div id="header">
+			<h1>Introduction</h1>
+		</div>
+		<div id="content">
+			<h1>Overview</h1>
+<p>Behave is a system, the purpose of which is to streamline the iterative process of designing, integrating and debugging behavioural AI via behaviour trees.</p>
+<p>Most behaviour tree implementation, though generally working under the same principles, differ slightly in their definition of the practical method of behaviour trees. Behave uses a definition very close to the one described on AIgameDev.com. So if you are completely new to behaviour trees then that site is a great source of learning.</p>
+<p><img src="resources/TreeStructure.png" alt="" /></p>
+<p>The structure of a tree is defined by a number of interconnected control nodes, ending in leaf nodes &#8211; actions. Actions are the interfaces to your agent code, talking to both sensors (enquiring about agent or world state) and motors (affecting a change in agent or world state).</p>
+<p>A tick of a tree flows top to bottom, evaluating branching based on tree state and then bottom to top, propagating result values and updating the tree state.</p>
+<p>Each control node has its own rule-set setting it apart &#8211; defining which child node it ticks and how it responds to the result of it &#8211; Success/Failure or Running. In general, though, a result of Running (indicating more processing needed) will always make sure that the child in question gets evaluated again next tick.</p>
+<p>All nodes hold a tiny bit of state to indicate the current execution flow &#8211; state such as the index of the last ticked child for sequences and selectors. This state is updated in accordance with the rule-set of the node in question &#8211; in response to the result of the current tick.</p>
+<p>With a few exceptions, once a node has updated its state, it also completes &#8211; returning a result of Sucess/Failure or Running to its parent node. Generally this means that any tree tick will result in at least one action node ticked.</p>
+<p>The result of the root node is the result of the entire tree execution &#8211; Running indicating that the tree has not completed and Success/Failure indicating a complete run and its result.</p>
+<p>Before starting tree execution from its initial state, it must first be reset. This resets all node state set in earlier ticks of the tree.</p>
+<h2>Configuration</h2>
+<p>Each node has a number of design-time configuration options &#8211; some types more than others. Two options shared by all are Instant and Inverse.</p>
+<p><img src="resources/Configuration.png" alt="" /></p>
+<p>Inverse simply changes result values of Success to Failure and vice-versa.</p>
+<p>The instant flag (off by default) actually alters the execution of certain parent nodes. When enabled, this can be used to have simple sensor actions not &#8220;consume&#8221; an entire tick, as its Sequence or Selector parent node will continue to its next child immediately after its evaluation.</p>
+<p>For more details on nodes and their configuration options, see the &#8220;Nodes&#8221; chapter.</p>
+<h1>Implementation</h1>
+<p>The Behave system is roughly divisible in four parts:</p>
+<ul>
+	<li>Designer</li>
+	<li>Compiler</li>
+	<li>Runtime</li>
+	<li>Debugger</li>
+</ul>
+<h2>Designer</h2>
+<p>Visually represented by a common behaviour tree design notation, the Behave designer aims to shorten the distance between idea and implementation as much as possible.</p>
+<p>At design-time, all Behave data goes into behave Libraries, which for runtime get compiled into an executable format. It is quite possible to use multiple libraries in each project both at edit and runtime, but commonly just one library per project is used.</p>
+<p style="float:right;"><img src="resources/UI.png" alt="" /></p>
+<p class="Note"><code>Unity</code> After creating a Behave library asset via the Asset/Create menu or the Create dropdown in the project window, the Behave main window will pop up. You can also access it from the inspector when a Behave library is selected or from the Window menu.</p>
+<p class="Note"><code>Unity</code> Aside from their asset form, Behave libraries can also live as exported .behave files. Not editable before imported back into asset form again, .behave files can be handy for transferring (full or partial) libraries or backup. Import/export can be found under the Assets/Behave menu.</p>
+<p class="Note"><code>Standalone</code> Libraries live as .behave files on disk, which can be created and loaded from the sidebar menu.</p>
+<p>In the library settings &#8211; accessible via the library name at the top of the sidebar, you can export the current library fully or partially as well as import a .behave file into the current library &#8211; merging the two.</p>
+<p>With a library being edited, trees can be added to it via the little &#8220;+&#8221; button next to the &#8220;Trees&#8221; headline in the sidebar. Double-clicking items in the sidebar lets you rename them &#8211; Unix path seperators serving as a means to group trees together.</p>
+<p>By drag-drop operation from the component bar to the canvas or via the keyboard interface, nodes can be easily added to your current tree. Within the canvas, easy drag-drop or keyboard operations allow you to quickly connect, configure and organise them.</p>
+<h3>Keyboard</h3>
+<p>Please find an overview of the keyboard mapping below:</p>
+<table>
+	<tr>
+		<td> Shift + mouse drag </td>
+		<td> Drag node only (default being drag subtree) </td>
+	</tr>
+	<tr>
+		<td> Arrow keys </td>
+		<td> Move selection around the tree </td>
+	</tr>
+	<tr>
+		<td> Alt + Arrow keys </td>
+		<td> Move selected node and subtree </td>
+	</tr>
+	<tr>
+		<td> Shift + Alt + Arrow keys </td>
+		<td> Move selected node only </td>
+	</tr>
+	<tr>
+		<td> Shift + Left/Right arrow </td>
+		<td> Move selected output connection left/right </td>
+	</tr>
+	<tr>
+		<td> Return/Enter </td>
+		<td> Show insertion cursor/insert </td>
+	</tr>
+	<tr>
+		<td> Esc </td>
+		<td> Hide insertion cursor/deselect </td>
+	</tr>
+	<tr>
+		<td> Tab </td>
+		<td> Cycle insertion cursor type </td>
+	</tr>
+	<tr>
+		<td> Cmd/Ctrl + Backspace </td>
+		<td> Delete node </td>
+	</tr>
+	<tr>
+		<td> Shift + Cmd/Ctrl + Backspace </td>
+		<td> Delete input connection </td>
+	</tr>
+	<tr>
+		<td> T </td>
+		<td> Toggle component instant flag </td>
+	</tr>
+	<tr>
+		<td> V </td>
+		<td> Toggle component invert flag </td>
+	</tr>
+	<tr>
+		<td> C </td>
+		<td> Switch Parallel component completion mode </td>
+	</tr>
+	<tr>
+		<td> I </td>
+		<td> Switch Parallel component child completion mode </td>
+	</tr>
+</table>
+<h2>Compiler</h2>
+<p>Once your idea has made it from your thoughts to the canvas, the next goal of Behave becomes to wire that idea to your application code as quickly as possible.</p>
+<p>This is achieved through a compiler. It builds your trees to runtime accessible classes which an be instantiated, wired to an agent and ticked via a direct function call.</p>
+<p>Since your behaviour trees end up as classes and functions, they are not just fast, but also familiar and easy to use when programming your application.</p>
+<p>To compile your currently edited library, select the library name in the sidebar, configure for debug or release, choose the compiler to use and press the &#8220;Apply changes&#8221; button.</p>
+<p>Alternatively, click the apply changes button to the right of the &#8220;Library&#8221; sidebar header to compile with the last chosen options.</p>
+<h2>Runtime</h2>
+<p>At runtime, for each compiled Behave library class, you can request new instances of your designed behaviour trees. When doing so, you need to specify an agent handling the newly instantiated tree.</p>
+<p><img src="resources/Runtime.png" alt="" /></p>
+<p>Trees and agents live in a symbiotic relationship. The agent ticks the tree via a function call and the tree calls back to the agent for action handling.</p>
+<p>Agent handler functions are either resolved by the tree, on instantiation, dynamically locating and linking agent functions via introspection or by the agent deriving from a compiled agent &#8220;blueprint&#8221; &#8211; an abstract class with virtual functions for the necessary handlers.</p>
+<p>Tree to agent invokes with no registered handlers go to default handlers on the agent.</p>
+<h2>Debugger</h2>
+<p>Any good rapid iteration tool needs good tools for testing and validating designs. The Behave debugger fits the bill nicely.</p>
+<p>When built in debugging mode, Behave libraries include debugging data and functionality for all contained trees. Instantiated trees will, to each attached debugger, continuously send information about the currently active node of the tree. The debugger uses this information to visually show you the current state of the active tree instances.</p>
+<p><img src="resources/Debugger.png" alt="" /></p>
+<p>Additionally, any attached debugger may at any point unplug tree instances and manually tick or reset them. Unplugged trees will on local tick immediately return a &#8220;running&#8221; state without evaluating or changing any tree state. This allows the developer to pause a tree and step through its execution while in a relevant environment.</p>
+<p>Debugged trees may also unplug themselves if in their execution they happen upon a node marked with a breakpoint.</p>
+<p>Last, but definitely not the least, overrides let debuggers augment the simulation as perceived by the executing trees. This facilitates easy testing of complex or rare scenarios or perhaps the impact of new actions with no handlers implemented.</p>
+<p>Note that since the debugger executes over the network, you can debug any Behave build on your machine, another computer, on a phone or where-ever it is running. WebPlayer builds are the exception as their sandbox environment do not allow for incoming socket connections.</p>
+<p>For debugging to function in your runtime, you need to either update it directly at your convenience / start it with a specified frequency or in your library build settings specify that the debugger should auto-launch. See the reference for more information.</p>
+<p>Assuming that you are running a Behave tree which has been built for debug and that you are updating the debugger runtime as described in the Flow section, your runtime should show up in the debugger list of the Behave window.</p>
+<p>If you are confident in your configuration and you are still not seeing your runtime, you might want to try hitting the refresh button a couple of times. Once you see the runtime, clicking it will connect the editor to it, list all contained trees and let you debug them.</p>
+		</div>
+	</body>
+</html>

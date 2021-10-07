@@ -1,0 +1,132 @@
+<html>
+	<head>
+		<title>Flow - </title>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body>
+		<div id="navigation">
+	<div id="content">
+		
+			
+				<a href="./0-Introduction.html">Introduction</a>
+			
+		
+			
+				<a href="./1-Flow.html">Flow</a>
+			
+		
+			
+				<a href="./2-Nodes.html">Nodes</a>
+			
+		
+			
+				<a href="./3-Patterns.html">Patterns</a>
+			
+		
+			
+				<a href="./4-Reference.html">Reference</a>
+			
+		
+			
+		
+			
+		
+		<div id="version">2.3.1 Temasek Polytechnic</div>
+	</div>
+</div>
+
+
+		<div id="header">
+			<h1>Flow</h1>
+		</div>
+		<div id="content">
+			<h1>Basics</h1>
+<p>In the Behave runtime, a tree is the runtime representation of a tree you designed and an agent is one of your own classes, a player- / animation- / squad- controller or whatever you like, either implementing the Behave IAgent interface or deriving from a generated agent blueprint.</p>
+<p>All that is required of an agent derived from the IAgent interface is that it implements a few default handlers. Aside from those, direct action (leaf node) handlers are optional. Blueprint derived agents are not required to override anything as all handlers are already implemented with default virtual implementations.</p>
+<p>Default action handlers as found by introspection on IAgent classes:
+<script src='https://gist.github.com/5555031.js?file=MyHandlers.cs'></script><div><noscript><pre><code>BehaveResult Tick[Name]Action (
+	Tree sender,
+	string stringParameter,
+	float floatParameter,
+	IAgent agent,
+	object data
+);
+void Reset[Name]Action (
+	Tree sender,
+	string stringParameter,
+	float floatParameter,
+	IAgent agent,
+	object data
+);</p>
+<p>BehaveResult Tick[Name]Action (Tree sender);
+void Reset[Name]Action (Tree sender);</p>
+<p>BehaveResult [Name]Action
+{
+	get; // Tick
+	set; // Reset
+}</code></pre></noscript></div></p>
+<p class="Note">In Behave 1, decorators were more similar to actions in that their behaviour was dictated directly by the agent class through decorator handlers. Since in Behave 2, decorators are now control nodes, there is no need for on-agent decorator handlers. Behaviour is strictly dictated via the control connection. More information in the Nodes section.</p>
+<p>When instantiating a tree, an agent reference must be given, as this agent will be the default recipient of callbacks from the tree instance. For agents implementing the agent interface, trees will on instantiation dynamically hook up handlers using introspection.</p>
+<p>The alternative agent blueprints are set up in the Behave designer as a name and a list of supported trees. They are generated into abstract classes with virtual handlers for the actions used by the supported trees.</p>
+<p>Though agent blueprints are limited in that their advantages only hold true in the case of the trees they have been designed to handle, they do save you the introspection overhead on tree instantiation. Additionally, given that their virtual handlers are known at compile time, you get code completion when overriding these.</p>
+<p>Minimal agent-tree setup, Unity example, library named &#8220;MyLibrary&#8221; containing a tree named &#8220;MyTree&#8221;:
+<script src='https://gist.github.com/5555031.js?file=MyAgent.cs'></script><div><noscript><pre><code>using UnityEngine;
+using Behave.Runtime;
+using Tree = Behave.Runtime.Tree;</p>
+<p>public class MyAgent : MonoBehaviour, IAgent
+{
+	Tree m_MyTree;</p>
+<p>void Start ()
+	{
+		m_MyTree = BLMyLibrary.InstantiateTree (
+			BLMyLibrary.TreeType.MyTree,
+			this
+		);
+	}</p>
+<p>public BehaveResult Tick (Tree sender)
+	{
+		Debug.Log (&quot;Tick: &quot; + (BLMyLibrary.ActionType)sender.ActiveID);</p>
+<p>return BehaveResult.Success;
+	}</p>
+<p>public void Reset (Tree sender)
+	{}</p>
+<p>public int SelectTopPriority (Tree sender, params int[] ids)
+	{
+		return ids<sup class="footnote" id="fnr0"><a href="#fn0">0</a></sup>;
+	}
+}</code></pre></noscript></div></p>
+<p>The coroutine loop ticking the tree in Start is not strictly required, but it is a very common pattern which you will very likely find yourself repeating in many implementations.</p>
+<p>Similarly, note how the Frequency property of the tree does not automatically have influence on the ticking of the tree. It is merely a variable which the designer can set when configuring the tree, which the programmer may then choose to use as makes most sense.</p>
+<p>From a library named &#8220;MyLibrary&#8221;, the following runtime class is compiled:
+<script src='https://gist.github.com/5555031.js?file=BLMyLibrary.cs'></script><div><noscript><pre><code>public class BLMyLibrary
+{
+	public enum TreeType { Path_To_TreeName, ..., Unknown };
+	public enum ContextType { ContextName, ..., Unknown };
+	public enum PriorityType { PriorityName, ..., Unknown };
+	public enum ActionType { ActionName, ..., Unknown };</p>
+<p>public static Tree InstantiateTree (TreeType treeType, IAgent agent);
+	public static TreeType Type (Tree tree);
+}
+</code></pre></noscript></div></p>
+<h1>Integration</h1>
+<p>Trees do not update themselves, but in stead need to be ticked. Ticking a tree will result in it in-turn ticking its currently active node. This node could be a control node, each of which have certain rules which dictate how they handle their child node(s), or it could be an action.</p>
+<p>Actions are logic constructs which are expected to perform a task and / or query a state and return success / failure / running. As these are highly context specific, they need to be handled by the agent associated with their tree.</p>
+<p>Each tree tick will therefore always result in at least one action tick. To your code, that means calling the tick method on a tree results in one or more action handlers or the default handlers being invoked by that tree.</p>
+<p>In addition to direct handlers and default handlers, a tree can have a forward set for any of its actions. The result being that for the given action on the given tree instance, the forwarded handler will be used in stead direct or default handlers.</p>
+<h1>Phases</h1>
+<p>A node, and therefore also an action, goes through three phases:</p>
+<ul>
+	<li>1 x Init</li>
+	<li>N x Tick</li>
+	<li>1 x Reset</li>
+</ul>
+<p>The first time a node is ticked since last reset, it enters its init phase just before its first tick phase. In the case of actions being handled, this means a separate action handler for the init call. Actions with no init handlers will assume successful init.</p>
+<p>Init is useful for setting up state such as counters or resource locks. If the result of a node tick is running, the behaviour tree will not progress to the next target node on its next tick, but will in stead re-tick the same node.</p>
+<p>This can result in only one entry to the init phase, followed by multiple ticks. Once a node returns success or failure, it is reset &#8211; which in the case of actions results in an invocation of the action reset handler or the default reset handler.</p>
+<p>Nodes can also get reset if their subtree is reset directly or by an interrupter.</p>
+<h1>Debugging</h1>
+<p>Though building a library in debug mode will ensure generation and updating of debug information at runtime, you still need to pass this information to monitoring connections at a set rate.</p>
+<p>This can either be done by directly calling <code>Behave.Debugger.Debugging.Update ();</code> at some frequency or calling <code>Behave.Debugger.DebugUpdater.Start (int frequency = 0);</code> once you want to start sending updates.</p>
+		</div>
+	</body>
+</html>

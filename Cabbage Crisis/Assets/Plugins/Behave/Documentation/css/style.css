@@ -1,0 +1,264 @@
+@font-face
+{
+	font-family: OxygenMono;
+	src: url('Oxygen_Mono/OxygenMono-Regular.ttf');
+}
+
+
+html, body
+{
+	margin: 0pt;
+	padding: 0pt;
+	background: #222;
+	color: #eee;
+}
+
+h1, h2, h3
+{
+	text-align: center;
+	margin: 0pt;
+	padding: 0pt;
+	max-width: 450pt;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+h1
+{
+	font-size: 60pt;
+	margin-top: 50pt;
+}
+
+h2
+{
+	font-size: 17pt;
+}
+
+h3
+{
+	font-size: 12pt;
+}
+
+a
+{
+	color: #eee;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+#header
+{
+	padding-top: 50pt;
+}
+
+#content
+{
+	max-width: 450pt;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 50pt;
+	margin-bottom: 50pt;
+	font-family: OxygenMono, monospace;
+	letter-spacing: -1pt;
+	font-size: 10pt;
+}
+
+#content table
+{
+	margin-left: 20pt;
+}
+
+#content td
+{
+	font-size: 10pt;
+	padding-right: 20pt;
+}
+
+#content h1, #content h2, #content h3
+{
+	text-align: left;
+	margin-top: 15pt;
+	clear: both;
+}
+
+#content p
+{
+	margin: 0pt;
+	padding: 0pt;
+	margin-bottom: 20pt;
+}
+
+#content h1
+{
+	font-size: 12pt;
+	font-weight: bold;
+}
+
+#content h2
+{
+	font-size: 12pt;
+	font-weight: normal;
+}
+
+#content h3
+{
+	font-size: 10pt;
+	font-weight: bold;
+}
+
+#content .title
+{
+	font-size: 14pt;
+	margin-top: 50pt;
+	margin-bottom: 30pt;
+	text-align: center;
+}
+
+#content .footer
+{
+	clear: both;
+	float: none;
+	height: 1px;
+	background: gray;
+	margin: 100pt;
+	margin-left: auto;
+	margin-right: auto;
+	width: 150pt;
+}
+
+#content .note
+{
+	margin: 20pt;
+	padding: 8pt;
+	background: #333;
+	font-family: monospace;
+	font-size: 10pt;
+	line-height: 150%;
+}
+
+#content code
+{
+	font-family: OxygenMono, monospace;
+	letter-spacing: -1pt;
+	font-weight: bold;
+}
+
+#content img
+{
+	margin-left: 30pt;
+	margin-bottom: 10pt;
+	float: right;
+}
+
+#content code
+{
+	color: #EEE1B0;
+	font-weight: normal;
+}
+
+#navigation
+{
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	background: #111;
+	border-bottom: 1px solid #333;
+}
+
+#navigation #content
+{
+	max-width: 600pt;
+	margin: 0pt;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#front
+{
+	background: #111;
+	height: 100%;
+}
+
+#front #navigation
+{
+	position: relative;
+	border-top: 1px solid #333;
+	border-bottom: none;
+	height: 50pt;
+}
+
+#front #header
+{
+	background: #222;
+	padding-top: 100pt;
+	padding-bottom: 100pt;
+}
+
+#navigation a, #navigation p
+{
+	float: left;
+	clear: none;
+	margin: 0pt !important;
+}
+
+#navigation a
+{
+	padding: 20pt;
+}
+
+#navigation #version
+{
+	float: right;
+	padding: 20pt;
+}
+
+.gist-syntax
+{
+	background: #222 !important;
+}
+
+.gist-meta
+{
+	background: #333 !important;
+}
+
+.gist-data
+{
+	border: none !important;
+}
+
+.gist-syntax
+{
+	padding: 20px !important;
+}
+
+.gist-file
+{
+	border: 1px solid #333 !important;
+}
+
+.k, .nn /* keywords and namespaces */
+{
+	color: gray !important;
+}
+
+.nc, .nf /* class name and function name */
+{
+	color: #fff !important;
+}
+
+.kt /* built-in types */
+{
+	color: orange !important;
+}
+
+.line
+{
+	font-size: 10pt;
+}
+
+.line-numbers
+{
+	display: none;
+}
